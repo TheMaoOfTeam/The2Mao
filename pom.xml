@@ -8,6 +8,7 @@
 	<version>1.0-SNAPSHOT</version>
 	<modules>
 		<module>jdkdemo</module>
+		<module>Design-Patterns</module>
 	</modules>
 	<packaging>pom</packaging>
 
