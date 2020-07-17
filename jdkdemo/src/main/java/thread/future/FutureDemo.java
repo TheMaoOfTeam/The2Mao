@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,7 +14,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Future接口在Java 5中被引入，设计初衷是对将来某个时刻会发生的结果进行建模。
+ * {@link Future}接口在Java 5中被引入，设计初衷是对将来某个时刻会发生的结果进行建模。
  * 它建模 了一种异步计算，返回一个执行运算结果的引用，当运算结束后，这个引用被返回给调用方。
  * 在 Future中触发那些潜在耗时的操作把调用线程解放出来，让它能继续执行其他有价值的工作，
  * 不再需要呆呆等待耗时的操作完成。
@@ -40,7 +41,7 @@ public class FutureDemo extends CommonTest {
             int a = 一个耗时三秒的计算操作(5);
             int b = 一个耗时五秒的计算操作(2);
             int result = 一个耗时一秒的求和操作(a, b);
-            //耗时为 5 + 2 + 1 = 8秒
+            //耗时为 5 + 3 + 1 = 9秒
             System.out.println("结算结果:" + result);
         });
     }
@@ -108,6 +109,25 @@ public class FutureDemo extends CommonTest {
         });
     }
 
+    @Test
+    public void completableFuture8新特性() {
+        timeExecute(()-> {
+            CompletableFuture<Integer> resultFuture = CompletableFuture.supplyAsync(() -> 一个耗时三秒的计算操作(5))
+                    .thenCombine(
+                            CompletableFuture.supplyAsync(() -> 一个耗时五秒的计算操作(2)),
+                            (a, b) -> 一个耗时一秒的求和操作(a, b)
+                    );
+
+            try {
+                System.out.println(resultFuture.get());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
 
 
 
@@ -140,6 +160,25 @@ public class FutureDemo extends CommonTest {
             e.printStackTrace();
         }
         return a + b;
+    }
+
+
+
+    @Test
+    public void future的get方法会无限阻塞吗() {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        Future<Integer> future = executorService.submit(() -> {
+            //手动制未检查异常
+            int a = 5/0;
+            return 2;
+        });
+        try {
+            System.out.println(future.get());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
 }
